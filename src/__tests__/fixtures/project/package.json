@@ -1,0 +1,8 @@
+{
+  "name": "fixture-project",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  }
+}

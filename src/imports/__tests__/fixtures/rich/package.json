@@ -1,0 +1,20 @@
+{
+  "name": "rich",
+  "type": "module",
+  "imports": {
+    "#*": "./src/*",
+    "#exact": "./src/exact.ts",
+    "#cond/*": { "import": "./lib/cond/*", "require": "./r" },
+    "#cond2/*": { "import": "lodash", "default": "./lib/cond2/*" },
+    "#alt/*": { "custom": "./lib/alt/*" },
+    "#alt2/*": { "a": "lodash", "b": "./lib/alt2/*" },
+    "#arr/*": ["lodash", "./lib/arr/*"],
+    "#arr-none/*": ["react"],
+    "no-hash": "./src/x.ts",
+    "#nonrel": "lodash",
+    "#nostar": "./src/*",
+    "#star/*": "./src/fixed.ts",
+    "#empty-cond": {},
+    "#nulltarget": null
+  }
+}

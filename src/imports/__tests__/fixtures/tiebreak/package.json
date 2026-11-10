@@ -1,0 +1,8 @@
+{
+  "name": "tiebreak",
+  "type": "module",
+  "imports": {
+    "#a/*": "./src/*",
+    "#a/*.ts": "./src/*.ts"
+  }
+}

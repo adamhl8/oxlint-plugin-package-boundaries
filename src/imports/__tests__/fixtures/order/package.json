@@ -1,0 +1,8 @@
+{
+  "name": "order",
+  "type": "module",
+  "imports": {
+    "#a/b/*": "./src/x/y/*",
+    "#a/*": "./src/x/*"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "@adamhl8/oxlint-plugin-package-boundaries",
+  "version": "0.0.0",
+  "description": "oxlint plugin: enforce package boundaries, so a folder's modules are imported only through its main module",
+  "keywords": [
+    "architecture",
+    "lint",
+    "module-boundaries",
+    "oxlint",
+    "oxlint-plugin",
+    "package-boundaries"
+  ],
+  "homepage": "https://github.com/adamhl8/oxlint-plugin-package-boundaries",
+  "bugs": {
+    "url": "https://github.com/adamhl8/oxlint-plugin-package-boundaries/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Adam Langbert",
+    "email": "adamhl@pm.me",
+    "url": "https://github.com/adamhl8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adamhl8/oxlint-plugin-package-boundaries.git"
+  },
+  "files": [
+    "dist/"
+  ],
+  "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "bask prepare"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "^1.93.0",
+    "oxc-parser": "^0.158.0"
+  },
+  "devDependencies": {
+    "@adamhl8/bask": "^0.6.1",
+    "@adamhl8/configs": "^4.0.0",
+    "@arethetypeswrong/core": "^0.18.5",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@types/bun": "^1.4.4",
+    "knip": "^6.44.2",
+    "markdown-toc": "^1.2.0",
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
+    "oxlint-tsgolint": "^7.0.2006",
+    "publint": "^0.3.25",
+    "release-it": "^21.1.2",
+    "release-it-git-cliff": "^0.2.1",
+    "tsdown": "^0.23.7",
+    "typescript": "^7.1.0-beta"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.91.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

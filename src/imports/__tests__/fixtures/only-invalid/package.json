@@ -1,0 +1,7 @@
+{
+  "name": "only-invalid",
+  "type": "module",
+  "imports": {
+    "no-hash": "./src/x.ts"
+  }
+}
