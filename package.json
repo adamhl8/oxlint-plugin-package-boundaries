@@ -1,6 +1,6 @@
 {
   "name": "@adamhl8/oxlint-plugin-package-boundaries",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "oxlint plugin: enforce package boundaries, so a folder's modules are imported only through its main module",
   "keywords": [
     "architecture",
