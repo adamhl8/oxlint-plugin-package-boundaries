@@ -1,6 +1,6 @@
 {
   "name": "@adamhl8/oxlint-plugin-package-boundaries",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "oxlint plugin: enforce package boundaries, so a package never loads code that uses it at runtime",
   "keywords": [
     "architecture",
