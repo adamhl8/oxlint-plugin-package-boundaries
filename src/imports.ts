@@ -1,9 +1,10 @@
 import fs from "node:fs"
 import path from "node:path"
 
+import type { ESTree } from "@oxlint/plugins"
 import { parseSync } from "oxc-parser"
 
-import { findPackageJson, loadImportsMap, subpathToAbs } from "#imports/imports-map.ts"
+import { findPackageJson, loadImportsMap, subpathToAbs } from "#imports/map.ts"
 
 /**
  * The parts of a statement this plugin reads to find an import. It's structural, so both oxlint's AST and
@@ -84,7 +85,7 @@ export const findPackageDirectory = (filePath: string): string | undefined => {
 }
 
 /** Returns the modules a module imports at runtime, read from its file, or none when the file can't be read. */
-const readRuntimeImports = (modulePath: string): string[] => {
+export const readRuntimeImports = (modulePath: string): string[] => {
   const stats = fs.statSync(modulePath, { throwIfNoEntry: false })
   if (!stats?.isFile()) return []
 
@@ -116,4 +117,32 @@ export const getRuntimeReach = (modulePath: string): Set<string> => {
     }
   }
   return reached
+}
+
+type ImportStatement = ESTree.ImportDeclaration | ESTree.ExportNamedDeclaration | ESTree.ExportAllDeclaration
+
+/** An import statement in the file being linted, with the file it resolves to. */
+export interface ResolvedImport {
+  node: ImportStatement
+  importPath: string
+  isTypeOnly: boolean
+}
+
+/**
+ * Returns visitors that call `check` with each import and re-export in a file that resolves to a local file. Leaves out
+ * a package's specifier, like `node:fs`, which no rule checks.
+ */
+export const visitImports = (filename: string, check: (resolvedImport: ResolvedImport) => void) => {
+  const checkStatement = (node: ImportStatement) => {
+    const importSource = toImportSource(node)
+    const importPath = importSource && resolveImport(filename, importSource.specifier)
+    if (importSource === undefined || importPath === undefined) return
+
+    check({ node, importPath, isTypeOnly: importSource.isTypeOnly })
+  }
+  return {
+    ImportDeclaration: checkStatement,
+    ExportNamedDeclaration: checkStatement,
+    ExportAllDeclaration: checkStatement,
+  }
 }

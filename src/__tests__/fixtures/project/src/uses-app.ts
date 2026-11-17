@@ -1,3 +1,3 @@
-import { feature } from "#app/app.ts"
+import { app } from "#app.ts"
 
-export const usesApp = feature
+export const usesApp = app

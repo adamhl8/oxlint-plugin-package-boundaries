@@ -9,7 +9,7 @@ const findFixtureUpwardImport = (importerModule: string, importedModule: string)
 
 describe("findUpwardImport", () => {
   it.each([
-    ["a module in a holding package that uses the importer's branch", "app/app.ts", "app/feature"],
+    ["a module in a holding package that uses the importer's branch", "app/feature.ts", "app/feature"],
     ["shared code that reaches back into the importer's branch", "uses-app.ts", "app"],
   ])("should find an import of %s", (_, importedModule, branch) => {
     expect(findFixtureUpwardImport("app/feature/part.ts", importedModule)).toStrictEqual({
@@ -22,10 +22,10 @@ describe("findUpwardImport", () => {
     ["shared code in a holding package that doesn't reach the branch", "app/feature/part.ts", "app/helper.ts"],
     ["shared code at the root", "app/feature/part.ts", "utils.ts"],
     ["a module in the importer's own package", "app/uses-lib.ts", "app/helper.ts"],
-    ["a module in the importer's own package that reaches back to it", "app/helper.ts", "app/app.ts"],
-    ["a module in a package the importer holds", "app/app.ts", "app/feature/part.ts"],
+    ["a module in the importer's own package that reaches back to it", "app/helper.ts", "app/feature.ts"],
+    ["a module in a package the importer holds", "app/feature.ts", "app/feature/part.ts"],
     ["another package", "app/uses-lib.ts", "lib/lib.ts"],
-    ["the importer itself", "app/app.ts", "app/app.ts"],
+    ["the importer itself", "app/feature.ts", "app/feature.ts"],
   ])("should allow %s", (_, importerModule, importedModule) => {
     expect(findFixtureUpwardImport(importerModule, importedModule)).toBeUndefined()
   })
@@ -33,6 +33,6 @@ describe("findUpwardImport", () => {
   it("should skip an importer outside the root", () => {
     const importerPath = `${PROJECT_DIRECTORY}/scripts/build.ts`
 
-    expect(findUpwardImport(ROOT_DIRECTORY, importerPath, toFixturePath("app/app.ts"))).toBeUndefined()
+    expect(findUpwardImport(ROOT_DIRECTORY, importerPath, toFixturePath("app.ts"))).toBeUndefined()
   })
 })

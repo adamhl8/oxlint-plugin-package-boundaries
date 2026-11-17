@@ -1,9 +1,8 @@
-import type { ESTree } from "@oxlint/plugins"
 import { defineRule } from "@oxlint/plugins"
 
-import { getRuntimeReach, resolveImport, toImportSource } from "#imports/imports.ts"
-import { getBranch, getPackagePath, holdsPackage, toModulePath } from "#layout/layout.ts"
-import { getRootDirectory, OPTIONS_SCHEMA } from "#rule-options.ts"
+import { getRuntimeReach, visitImports } from "#imports.ts"
+import { getBranch, getPackagePath, holdsPackage, toModulePath } from "#layout.ts"
+import { readLintedModule } from "#settings.ts"
 
 /**
  * A runtime import of a module in a package that holds the importer's own, where the module reaches back into the
@@ -13,8 +12,6 @@ interface UpwardImport {
   module: string
   branch: string
 }
-
-type ImportStatement = ESTree.ImportDeclaration | ESTree.ExportNamedDeclaration | ESTree.ExportAllDeclaration
 
 /**
  * Returns how a runtime import reaches up into code that uses the importer's own package, or `undefined` when it
@@ -48,27 +45,21 @@ export const noUpwardImports = defineRule({
   meta: {
     type: "problem",
     docs: { description: "Forbid a runtime import of code in a holding package that uses the importer's own package." },
-    schema: OPTIONS_SCHEMA,
     messages: {
       usesOwnPackage:
         "'{{module}}' uses package '{{branch}}', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use '{{branch}}'.",
     },
   },
   create: (context) => {
-    const rootDirectory = getRootDirectory(context)
-    if (rootDirectory === undefined) return {}
+    const lintedModule = readLintedModule(context)
+    // Skip test code, because nothing imports a test, so it can't take part in the order modules load in.
+    if (lintedModule === undefined || lintedModule.isTestCode) return {}
 
-    const checkImport = (node: ImportStatement) => {
-      const importSource = toImportSource(node)
-      if (importSource === undefined || importSource.isTypeOnly) return
+    return visitImports(context.filename, ({ node, importPath, isTypeOnly }) => {
+      if (isTypeOnly) return
 
-      const importPath = resolveImport(context.filename, importSource.specifier)
-      if (importPath === undefined) return
-
-      const upwardImport = findUpwardImport(rootDirectory, context.filename, importPath)
+      const upwardImport = findUpwardImport(lintedModule.rootDirectory, context.filename, importPath)
       if (upwardImport !== undefined) context.report({ node, messageId: "usesOwnPackage", data: { ...upwardImport } })
-    }
-
-    return { ImportDeclaration: checkImport, ExportNamedDeclaration: checkImport, ExportAllDeclaration: checkImport }
+    })
   },
 })

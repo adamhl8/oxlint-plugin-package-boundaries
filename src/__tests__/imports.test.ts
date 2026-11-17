@@ -7,7 +7,7 @@ import bun from "bun"
 import { parseSync } from "oxc-parser"
 
 import { PROJECT_DIRECTORY, ROOT_DIRECTORY, toFixturePath } from "#__tests__/project.ts"
-import { findPackageDirectory, getRuntimeReach, resolveImport, toImportSource } from "#imports/imports.ts"
+import { findPackageDirectory, getRuntimeReach, resolveImport, toImportSource } from "#imports.ts"
 
 /** Parses `code` and returns what each top-level statement imports. */
 const readImportSources = (code: string) =>
@@ -84,7 +84,8 @@ describe("findPackageDirectory", () => {
 describe("getRuntimeReach", () => {
   it("should follow runtime imports at any depth, through cycles, and skip type-only imports and packages", () => {
     expect(getReachedModules("app/uses-lib.ts")).toStrictEqual([
-      "app/app.ts",
+      "app.ts",
+      "app/feature.ts",
       "app/feature/part.ts",
       "app/helper.ts",
       "lib/lib.ts",

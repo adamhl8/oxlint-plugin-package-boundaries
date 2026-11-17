@@ -1,5 +1,5 @@
-import { feature } from "#app/app.ts"
-import type { Feature } from "#app/app.ts"
+import { feature } from "#app/feature.ts"
+import type { Feature } from "#app/feature.ts"
 import { helper } from "#app/helper.ts"
 import { usesApp } from "#uses-app.ts"
 import { shout } from "#utils.ts"
