@@ -23,17 +23,19 @@ An [oxlint](https://oxc.rs/docs/guide/usage/linter) plugin that enforces package
 src/
   index.ts               the published entry point
   utils.ts               shared code: several packages use it, and no package owns it
+  session.ts             the module that package `session` belongs to
   session/
-    session.ts           a module of package `session`
-    step.ts
+    step.ts              a module of package `session`
+    handlers.ts          the module that `session/handlers`, a subpackage of `session`, belongs to
     handlers/
-      handlers.ts        a module of `session/handlers`, a subpackage of `session`
+      file.ts            the module that `session/handlers/file` belongs to
       file/
-        file.ts          a module of `session/handlers/file`
-        write.ts
+        write.ts         a part split out of `file.ts`
+        shared.ts        code that `file.ts` and `write.ts` share
 ```
 
 - A package is a folder of related modules. Any module may import any other module, at any depth. The plugin doesn't decide what a package exposes.
+- The module a package belongs to sits beside its folder, under the same name, like `file.ts` beside `file/`. It uses its package, so a module inside the folder can't import a value from it. That module imports only types from it, or the shared code moves into the folder, like `file/shared.ts`.
 - A package can hold other packages. A module in `session/` may use `session/handlers/`, but a module in `session/handlers/` may not load, at runtime, a module in `session/` that uses `session/handlers/`.
 - Shared code lives in the nearest package that holds every module that uses it. Any module inside that package may import it, as long as the shared code doesn't use the importer's own package.
 - Modules in the same package may import each other. A cycle among them is the only runtime hazard, and oxlint's [`import/no-cycle`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-cycle) reports it, so turn that rule on too.
@@ -78,8 +80,8 @@ A runtime import must not load code from a package that holds the importer's own
 In `src/app/feature/part.ts`:
 
 ```ts
-import { feature } from "#app/app.ts" // error: `app/app.ts` uses `app/feature`, which holds this module
-import type { Feature } from "#app/app.ts" // ok: type-only
+import { feature } from "#app/feature.ts" // error: `app/feature.ts` uses `app/feature`, which holds this module
+import type { Feature } from "#app/feature.ts" // ok: type-only
 import { sibling } from "#app/feature/sibling.ts" // ok: the same package
 import { helper } from "#app/helper.ts" // ok: shared code that doesn't use `app/feature`
 ```
