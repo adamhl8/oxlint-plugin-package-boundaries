@@ -1,3 +1,3 @@
-import { internal } from "#lib/internal.ts"
+import { feature } from "#app/app.ts"
 
-export const build = internal
+export const build = feature

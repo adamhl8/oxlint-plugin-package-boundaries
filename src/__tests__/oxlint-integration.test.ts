@@ -15,7 +15,7 @@ const TSDOWN_BIN = path.join(REPO_DIRECTORY, "node_modules/.bin/tsdown")
 const RULE_PREFIX = "package-boundaries("
 
 /**
- * Lints a copy of the fixture project with the built plugin, giving both rules `ruleOptions`, and returns the plugin's
+ * Lints a copy of the fixture project with the built plugin, giving the rule `ruleOptions`, and returns the plugin's
  * diagnostics, one line each, sorted. Lint a copy, because the config file has to sit beside the project.
  */
 const lintFixture = async (ruleOptions: Record<string, unknown> = {}): Promise<string[]> => {
@@ -24,7 +24,6 @@ const lintFixture = async (ruleOptions: Record<string, unknown> = {}): Promise<s
   const config = {
     jsPlugins: [PLUGIN_PATH],
     rules: {
-      "package-boundaries/no-deep-imports": ["error", ruleOptions],
       "package-boundaries/no-upward-imports": ["error", ruleOptions],
     },
   }
@@ -45,25 +44,16 @@ beforeAll(async () => {
 })
 
 describe("the plugin in oxlint", () => {
-  it("should report every import that breaks a package boundary, and nothing outside the root", async () => {
+  it("should report every runtime import of code that uses the importer's own package, and nothing outside the root", async () => {
     expect(await lintFixture()).toStrictEqual([
       "src/app/feature/part.ts:1:1: 'app/app.ts' uses package 'app/feature', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use 'app/feature'. [Error/package-boundaries(no-upward-imports)]",
-      "src/app/feature/part.ts:3:1: 'app/feature/feature.ts' is the main module of this module's own package, and it uses this package. Import from the module that declares what you need, or import only types. [Error/package-boundaries(no-upward-imports)]",
-      "src/app/feature/part.ts:5:1: 'uses-app.ts' uses package 'app', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use 'app'. [Error/package-boundaries(no-upward-imports)]",
-      "src/app/uses-lib.ts:12:1: 'lib/nested/nested.ts' is inside package 'lib'. Import it through that package's main module, 'lib/lib.ts'. [Error/package-boundaries(no-deep-imports)]",
-      "src/app/uses-lib.ts:4:1: 'app/feature/part.ts' is inside package 'app/feature'. Import it through that package's main module, 'app/feature/feature.ts'. [Error/package-boundaries(no-deep-imports)]",
-      "src/app/uses-lib.ts:5:1: 'lib/internal.ts' is inside package 'lib'. Import it through that package's main module, 'lib/lib.ts'. [Error/package-boundaries(no-deep-imports)]",
-      "src/app/uses-lib.ts:7:1: 'lib/nested/deep.ts' is inside package 'lib'. Import it through that package's main module, 'lib/lib.ts'. [Error/package-boundaries(no-deep-imports)]",
-      "src/app/uses-lib.ts:8:1: 'lib/nested/nested.ts' is inside package 'lib'. Import it through that package's main module, 'lib/lib.ts'. [Error/package-boundaries(no-deep-imports)]",
-      "src/app/uses-lib.ts:9:1: 'lib/internal.ts' is inside package 'lib'. Import it through that package's main module, 'lib/lib.ts'. [Error/package-boundaries(no-deep-imports)]",
+      "src/app/feature/part.ts:4:1: 'uses-app.ts' uses package 'app', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use 'app'. [Error/package-boundaries(no-upward-imports)]",
     ])
   })
 
   it("should treat the folder the root option names as the root package", async () => {
     expect(await lintFixture({ root: "src/app" })).toStrictEqual([
       "src/app/feature/part.ts:1:1: 'app.ts' uses package 'feature', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use 'feature'. [Error/package-boundaries(no-upward-imports)]",
-      "src/app/feature/part.ts:3:1: 'feature/feature.ts' is the main module of this module's own package, and it uses this package. Import from the module that declares what you need, or import only types. [Error/package-boundaries(no-upward-imports)]",
-      "src/app/uses-lib.ts:4:1: 'feature/part.ts' is inside package 'feature'. Import it through that package's main module, 'feature/feature.ts'. [Error/package-boundaries(no-deep-imports)]",
     ])
   })
 })

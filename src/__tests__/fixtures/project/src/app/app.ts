@@ -1,4 +1,4 @@
-import { part } from "#app/feature/feature.ts"
+import { part } from "#app/feature/part.ts"
 
 export type Feature = string
 export const feature = part

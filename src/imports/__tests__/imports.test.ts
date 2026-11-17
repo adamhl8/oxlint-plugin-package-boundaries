@@ -85,12 +85,9 @@ describe("getRuntimeReach", () => {
   it("should follow runtime imports at any depth, through cycles, and skip type-only imports and packages", () => {
     expect(getReachedModules("app/uses-lib.ts")).toStrictEqual([
       "app/app.ts",
-      "app/feature/feature.ts",
       "app/feature/part.ts",
       "app/helper.ts",
-      "lib/internal.ts",
       "lib/lib.ts",
-      "lib/nested/nested.ts",
       "uses-app.ts",
       "utils.ts",
     ])

@@ -1,13 +1,11 @@
 import { definePlugin } from "@oxlint/plugins"
 
-import { noDeepImports } from "#no-deep-imports.ts"
 import { noUpwardImports } from "#no-upward-imports.ts"
 
 const plugin = definePlugin({
-  // Name the rule prefix users type in config, like `package-boundaries/no-deep-imports`.
+  // Name the rule prefix users type in config, like `package-boundaries/no-upward-imports`.
   meta: { name: "package-boundaries" },
   rules: {
-    "no-deep-imports": noDeepImports,
     "no-upward-imports": noUpwardImports,
   },
 })

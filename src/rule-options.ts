@@ -7,7 +7,7 @@ import { findPackageDirectory } from "#imports/imports.ts"
 // Hold the root package in `src/`, which most projects keep their code in, beside `package.json`.
 const DEFAULT_ROOT = "src"
 
-/** The options both rules take: `root`, the folder that holds the root package, relative to `package.json`. */
+/** The options the rule takes: `root`, the folder that holds the root package, relative to `package.json`. */
 export const OPTIONS_SCHEMA: RuleOptionsSchema = [
   {
     type: "object",

@@ -2,16 +2,17 @@ import type { ESTree } from "@oxlint/plugins"
 import { defineRule } from "@oxlint/plugins"
 
 import { getRuntimeReach, resolveImport, toImportSource } from "#imports/imports.ts"
-import { getBranch, getPackagePath, holdsPackage, isMainModule, toModulePath } from "#layout/layout.ts"
+import { getBranch, getPackagePath, holdsPackage, toModulePath } from "#layout/layout.ts"
 import { getRootDirectory, OPTIONS_SCHEMA } from "#rule-options.ts"
 
 /**
- * A runtime import of code that uses the importer's own package: the package's main module, or a module in a package
- * that holds it and reaches back into the branch that leads to the importer.
+ * A runtime import of a module in a package that holds the importer's own, where the module reaches back into the
+ * branch that leads to the importer.
  */
-type UpwardImport =
-  | { kind: "ownMainModule"; module: string }
-  | { kind: "usesOwnPackage"; module: string; branch: string }
+interface UpwardImport {
+  module: string
+  branch: string
+}
 
 type ImportStatement = ESTree.ImportDeclaration | ESTree.ExportNamedDeclaration | ESTree.ExportAllDeclaration
 
@@ -26,34 +27,29 @@ export const findUpwardImport = (
 ): UpwardImport | undefined => {
   const importerModule = toModulePath(rootDirectory, importerPath)
   const importedModule = toModulePath(rootDirectory, importPath)
-  if (importerModule === undefined || importedModule === undefined || importerModule === importedModule)
-    return undefined
+  if (importerModule === undefined || importedModule === undefined) return undefined
 
   const importerPackage = getPackagePath(importerModule)
   const importedPackage = getPackagePath(importedModule)
 
-  // Allow a sibling, but not the package's main module, because the main module uses the package.
-  if (importedPackage === importerPackage)
-    return isMainModule(importedModule) ? { kind: "ownMainModule", module: importedModule } : undefined
-  if (!holdsPackage(importedPackage, importerPackage)) return undefined
+  // Allow any module in the importer's own package.
+  // A cycle there is the only runtime hazard, and `import/no-cycle` reports it.
+  if (importedPackage === importerPackage || !holdsPackage(importedPackage, importerPackage)) return undefined
 
-  // Allow shared code in a package that holds this one, unless it reaches the branch this module is in.
   const branch = getBranch(importedPackage, importerPackage)
   const usesBranch = [...getRuntimeReach(importPath)].some((reachedPath) => {
     const reachedModule = toModulePath(rootDirectory, reachedPath)
     return reachedModule !== undefined && holdsPackage(branch, getPackagePath(reachedModule))
   })
-  return usesBranch ? { kind: "usesOwnPackage", module: importedModule, branch } : undefined
+  return usesBranch ? { module: importedModule, branch } : undefined
 }
 
 export const noUpwardImports = defineRule({
   meta: {
     type: "problem",
-    docs: { description: "Forbid a runtime import of code that uses the importer's own package." },
+    docs: { description: "Forbid a runtime import of code in a holding package that uses the importer's own package." },
     schema: OPTIONS_SCHEMA,
     messages: {
-      ownMainModule:
-        "'{{module}}' is the main module of this module's own package, and it uses this package. Import from the module that declares what you need, or import only types.",
       usesOwnPackage:
         "'{{module}}' uses package '{{branch}}', which holds this module. Import only types from it, or move what this module needs into shared code that doesn't use '{{branch}}'.",
     },
@@ -70,10 +66,7 @@ export const noUpwardImports = defineRule({
       if (importPath === undefined) return
 
       const upwardImport = findUpwardImport(rootDirectory, context.filename, importPath)
-      if (upwardImport === undefined) return
-
-      const { kind, ...data } = upwardImport
-      context.report({ node, messageId: kind, data })
+      if (upwardImport !== undefined) context.report({ node, messageId: "usesOwnPackage", data: { ...upwardImport } })
     }
 
     return { ImportDeclaration: checkImport, ExportNamedDeclaration: checkImport, ExportAllDeclaration: checkImport }
